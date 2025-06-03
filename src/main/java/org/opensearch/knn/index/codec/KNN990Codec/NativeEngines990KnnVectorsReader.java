@@ -81,6 +81,8 @@ public class NativeEngines990KnnVectorsReader extends KnnVectorsReader {
         if (memoryOptimizedSearchEnabled && state.context.context() != IOContext.Context.MERGE) {
             loadMemoryOptimizedSearcherIfRequired();
         }
+
+        loadMemoryOptimizedSearcherIfRequired();
     }
 
     /**
@@ -104,7 +106,10 @@ public class NativeEngines990KnnVectorsReader extends KnnVectorsReader {
      */
     @Override
     public FloatVectorValues getFloatVectorValues(final String field) throws IOException {
-        return flatVectorsReader.getFloatVectorValues(field);
+        final VectorSearcher memoryOptimizedSearcher = vectorSearchers.get(field);
+        return memoryOptimizedSearcher.getFloatVectorValues(field);
+
+//        return flatVectorsReader.getFloatVectorValues(field);
     }
 
     /**

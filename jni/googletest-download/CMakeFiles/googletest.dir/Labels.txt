@@ -1,0 +1,14 @@
+# Target labels
+ googletest
+# Source files and their labels
+/Users/kaushisk/Documents/k-NN/jni/googletest-download/CMakeFiles/googletest
+/Users/kaushisk/Documents/k-NN/jni/googletest-download/CMakeFiles/googletest.rule
+/Users/kaushisk/Documents/k-NN/jni/googletest-download/CMakeFiles/googletest-complete.rule
+/Users/kaushisk/Documents/k-NN/jni/googletest-download/googletest-prefix/src/googletest-stamp/googletest-build.rule
+/Users/kaushisk/Documents/k-NN/jni/googletest-download/googletest-prefix/src/googletest-stamp/googletest-configure.rule
+/Users/kaushisk/Documents/k-NN/jni/googletest-download/googletest-prefix/src/googletest-stamp/googletest-download.rule
+/Users/kaushisk/Documents/k-NN/jni/googletest-download/googletest-prefix/src/googletest-stamp/googletest-install.rule
+/Users/kaushisk/Documents/k-NN/jni/googletest-download/googletest-prefix/src/googletest-stamp/googletest-mkdir.rule
+/Users/kaushisk/Documents/k-NN/jni/googletest-download/googletest-prefix/src/googletest-stamp/googletest-patch.rule
+/Users/kaushisk/Documents/k-NN/jni/googletest-download/googletest-prefix/src/googletest-stamp/googletest-test.rule
+/Users/kaushisk/Documents/k-NN/jni/googletest-download/googletest-prefix/src/googletest-stamp/googletest-update.rule
