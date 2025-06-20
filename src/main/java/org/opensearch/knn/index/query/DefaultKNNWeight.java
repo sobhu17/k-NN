@@ -82,7 +82,8 @@ public class DefaultKNNWeight extends KNNWeight {
                         quantizedVector == null ? vectorDataType : VectorDataType.BINARY
                     ),
                     knnQuery.getIndexName(),
-                    modelId
+                    modelId,
+                        reader.getVectorReader().getFloatVectorValues(knnQuery.getField())
                 ),
                 true
             );

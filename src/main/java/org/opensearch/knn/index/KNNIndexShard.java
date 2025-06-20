@@ -171,7 +171,8 @@ public class KNNIndexShard {
                             engineFileContext.getVectorDataType()
                         ),
                         getIndexName(),
-                        engineFileContext.getModelId()
+                        engineFileContext.getModelId(),
+                            null
                     ),
                     true
                 );
