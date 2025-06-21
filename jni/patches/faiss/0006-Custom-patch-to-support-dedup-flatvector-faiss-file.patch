@@ -1,0 +1,69 @@
+From a24afa4826df2b93f97bddbda58a37458e723fb1 Mon Sep 17 00:00:00 2001
+From: sobhu17 <saurabh.kaushiksde@gmail.com>
+Date: Fri, 20 Jun 2025 17:45:53 -0700
+Subject: [PATCH] remove vector faiss file
+
+---
+ faiss/impl/index_read.cpp  | 15 ++++++++++++++-
+ faiss/impl/index_write.cpp |  2 +-
+ faiss/impl/io.h            |  5 +++++
+ 3 files changed, 20 insertions(+), 2 deletions(-)
+
+diff --git a/faiss/impl/index_read.cpp b/faiss/impl/index_read.cpp
+index c7887a4f5..769fd6592 100644
+--- a/faiss/impl/index_read.cpp
++++ b/faiss/impl/index_read.cpp
+@@ -545,7 +545,20 @@ Index* read_index(IOReader* f, int io_flags) {
+         }
+         read_index_header(idxf, f);
+         idxf->code_size = idxf->d * sizeof(float);
+-        READXBVECTOR(idxf->codes);
++
++        idxf->codes.resize(idxf->ntotal * idxf->code_size);
++
++        if (!idxf->codes.empty()) {
++            float* dataPtr = reinterpret_cast<float*>(idxf->codes.data());
++            size_t dim = idxf->d;
++            for (size_t i = 0; i < idxf->ntotal; i++) {
++                if (!f->copy(dataPtr + i * dim, dim * sizeof(float))) {
++                    throw std::runtime_error("Failed to load flat vectors via IOReader::copy at index " + std::to_string(i));
++                }
++            }
++        }
++
++//        READXBVECTOR(idxf->codes);
+         FAISS_THROW_IF_NOT(
+                 idxf->codes.size() == idxf->ntotal * idxf->code_size);
+         // leak!
+diff --git a/faiss/impl/index_write.cpp b/faiss/impl/index_write.cpp
+index 0118ef471..6e96454a4 100644
+--- a/faiss/impl/index_write.cpp
++++ b/faiss/impl/index_write.cpp
+@@ -400,7 +400,7 @@ void write_index(const Index* idx, IOWriter* f, int io_flags) {
+                                                                  : "IxFl");
+         WRITE1(h);
+         write_index_header(idx, f);
+-        WRITEXBVECTOR(idxf->codes);
++//        WRITEXBVECTOR(idxf->codes);
+     } else if (const IndexLSH* idxl = dynamic_cast<const IndexLSH*>(idx)) {
+         uint32_t h = fourcc("IxHe");
+         WRITE1(h);
+diff --git a/faiss/impl/io.h b/faiss/impl/io.h
+index 56a074fec..ca0b56e24 100644
+--- a/faiss/impl/io.h
++++ b/faiss/impl/io.h
+@@ -34,6 +34,11 @@ struct IOReader {
+     // return a file number that can be memory-mapped
+     virtual int filedescriptor();
+ 
++    // New method to stream full-precision vectors
++    virtual bool copy(void* dest, int expectedByteSize) {
++        return false; // default fallback
++    }
++
+     virtual ~IOReader() {}
+ };
+ 
+-- 
+2.39.5 (Apple Git-154)
+
