@@ -109,49 +109,6 @@ public class FaissIndexScalarQuantizedFlat extends FaissIndex {
             }
 
             @Override
-            public DocIndexIterator iterator() {
-                return new DocIndexIterator() {
-                    int internalVectorId = -1;
-
-                    @Override
-                    public int index() {
-                        return internalVectorId;  // Internal vector id
-                    }
-
-                    @Override
-                    public int docID() {
-                        return internalVectorId;  // internal vector id == Lucene doc id.
-                    }
-
-                    @Override
-                    public int nextDoc() {
-                        int nextIndex = internalVectorId + 1;
-                        if (nextIndex < totalNumberOfVectors) {
-                            return internalVectorId = nextIndex;
-                        }
-
-                        return internalVectorId = NO_MORE_DOCS;
-                    }
-
-                    @Override
-                    public int advance(int i) {
-                        final int nextIndex = i;
-
-                        if (nextIndex < totalNumberOfVectors) {
-                            return internalVectorId = nextIndex;
-                        }
-
-                        return internalVectorId = NO_MORE_DOCS;
-                    }
-
-                    @Override
-                    public long cost() {
-                        return totalNumberOfVectors;
-                    }
-                };
-            }
-
-            @Override
             public int dimension() {
                 return dimension;
             }
