@@ -20,7 +20,6 @@ public class VectorReader {
 
     public float[] next() throws IOException {
         int docId = iterator.nextDoc();
-        System.out.println("Calling next(): docId = " + docId);
         if (docId != DocIndexIterator.NO_MORE_DOCS) {
             return floatVectorValues.vectorValue(docId);
         } else {
