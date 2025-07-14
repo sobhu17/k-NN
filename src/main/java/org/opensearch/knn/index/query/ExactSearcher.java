@@ -44,8 +44,10 @@ import org.opensearch.knn.indices.ModelDao;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.function.Predicate;
 
 @Log4j2
@@ -89,6 +91,9 @@ public class ExactSearcher {
      */
     private TopDocs doRadialSearch(LeafReaderContext leafReaderContext, ExactSearcherContext context, KNNIterator iterator)
         throws IOException {
+        // Ensure `isMemoryOptimizedSearchEnabled` is set. This is necessary to determine whether distance to score conversion is required.
+        assert (context.isMemoryOptimizedSearchEnabled != null);
+
         final SegmentReader reader = Lucene.segmentReader(leafReaderContext.reader());
         final FieldInfo fieldInfo = FieldInfoExtractor.getFieldInfo(reader, context.getField());
         if (fieldInfo == null) {
@@ -99,7 +104,13 @@ public class ExactSearcher {
             throw new IllegalArgumentException(String.format(Locale.ROOT, "Engine [%s] does not support radial search", engine));
         }
         final SpaceType spaceType = FieldInfoExtractor.getSpaceType(modelDao, fieldInfo);
-        final float minScore = spaceType.scoreTranslation(context.getRadius());
+        // We need to use the given radius when memory optimized search is enabled. Since it relies on Lucene's scoring framework, the given
+        // max distance is already converted min score then saved in `radius`. Thus, we don't need a score translation which does not make
+        // sense as it is treating min score as a max distance otherwise.
+        final float minScore = context.isMemoryOptimizedSearchEnabled
+            ? context.getRadius()
+            : spaceType.scoreTranslation(context.getRadius());
+
         return filterDocsByMinScore(context, iterator, minScore);
     }
 
@@ -117,6 +128,7 @@ public class ExactSearcher {
         // Creating min heap and init with MAX DocID and Score as -INF.
         final HitQueue queue = new HitQueue(limit, true);
         ScoreDoc topDoc = queue.top();
+        final Map<Integer, Float> docToScore = new HashMap<>();
         int docId;
         while ((docId = iterator.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
             final float currentScore = iterator.score();
@@ -204,19 +216,29 @@ public class ExactSearcher {
                 spaceType
             );
         }
-        final byte[] quantizedQueryVector;
-        final SegmentLevelQuantizationInfo segmentLevelQuantizationInfo;
+        byte[] quantizedQueryVector = null;
+        SegmentLevelQuantizationInfo segmentLevelQuantizationInfo = null;
         if (exactSearcherContext.isUseQuantizedVectorsForSearch()) {
             // Build Segment Level Quantization info.
-            segmentLevelQuantizationInfo = SegmentLevelQuantizationInfo.build(reader, fieldInfo, exactSearcherContext.getField());
-            // Quantize the Query Vector Once.
-            quantizedQueryVector = SegmentLevelQuantizationUtil.quantizeVector(
-                exactSearcherContext.getFloatQueryVector(),
-                segmentLevelQuantizationInfo
+            segmentLevelQuantizationInfo = SegmentLevelQuantizationInfo.build(
+                reader,
+                fieldInfo,
+                exactSearcherContext.getField(),
+                reader.getSegmentInfo().info.getVersion()
             );
-        } else {
-            segmentLevelQuantizationInfo = null;
-            quantizedQueryVector = null;
+            // Quantize the Query Vector Once. Or transform it in the case of ADC.
+            if (SegmentLevelQuantizationUtil.isAdcEnabled(segmentLevelQuantizationInfo)) {
+                SegmentLevelQuantizationUtil.transformVectorWithADC(
+                    exactSearcherContext.getFloatQueryVector(),
+                    segmentLevelQuantizationInfo,
+                    spaceType
+                );
+            } else {
+                quantizedQueryVector = SegmentLevelQuantizationUtil.quantizeVector(
+                    exactSearcherContext.getFloatQueryVector(),
+                    segmentLevelQuantizationInfo
+                );
+            }
         }
 
         final KNNVectorValues<float[]> vectorValues = KNNVectorValuesFactory.getVectorValues(fieldInfo, reader);
@@ -268,5 +290,6 @@ public class ExactSearcher {
         String field;
         Integer maxResultWindow;
         VectorSimilarityFunction similarityFunction;
+        Boolean isMemoryOptimizedSearchEnabled;
     }
 }
