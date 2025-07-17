@@ -123,9 +123,10 @@ public abstract class NativeMemoryEntryContext<T extends NativeMemoryAllocation>
             String vectorIndexCacheKey,
             NativeMemoryLoadStrategy.IndexLoadStrategy indexLoadStrategy,
             Map<String, Object> parameters,
-            String openSearchIndexName
+            String openSearchIndexName,
+            FloatVectorValues floatVectorValues
         ) {
-            this(directory, vectorIndexCacheKey, indexLoadStrategy, parameters, openSearchIndexName, null, null);
+            this(directory, vectorIndexCacheKey, indexLoadStrategy, parameters, openSearchIndexName, null, floatVectorValues);
         }
 
         /**

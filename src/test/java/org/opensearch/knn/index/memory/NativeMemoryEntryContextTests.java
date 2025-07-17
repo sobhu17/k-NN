@@ -12,6 +12,7 @@
 package org.opensearch.knn.index.memory;
 
 import com.google.common.collect.ImmutableMap;
+import org.apache.lucene.index.FloatVectorValues;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.IndexOutput;
@@ -44,13 +45,15 @@ public class NativeMemoryEntryContextTests extends KNNTestCase {
 
     public void testIndexEntryContext_load() throws IOException {
         NativeMemoryLoadStrategy.IndexLoadStrategy indexLoadStrategy = mock(NativeMemoryLoadStrategy.IndexLoadStrategy.class);
+        final FloatVectorValues floatVectorValues = mock(FloatVectorValues.class);
         NativeMemoryEntryContext.IndexEntryContext indexEntryContext = spy(
             new NativeMemoryEntryContext.IndexEntryContext(
                 (Directory) null,
                 TestUtils.createFakeNativeMamoryCacheKey("test"),
                 indexLoadStrategy,
                 null,
-                "test"
+                "test",
+                    floatVectorValues
             )
         );
 
@@ -72,12 +75,14 @@ public class NativeMemoryEntryContextTests extends KNNTestCase {
 
     public void testIndexEntryContext_load_with_unopened_graphFile() throws IOException {
         NativeMemoryLoadStrategy.IndexLoadStrategy indexLoadStrategy = mock(NativeMemoryLoadStrategy.IndexLoadStrategy.class);
+        final FloatVectorValues floatVectorValues = mock(FloatVectorValues.class);
         NativeMemoryEntryContext.IndexEntryContext indexEntryContext = new NativeMemoryEntryContext.IndexEntryContext(
             (Directory) null,
             TestUtils.createFakeNativeMamoryCacheKey("test"),
             indexLoadStrategy,
             null,
-            "test"
+            "test",
+                floatVectorValues
         );
 
         NativeMemoryAllocation.IndexAllocation indexAllocation = new NativeMemoryAllocation.IndexAllocation(
@@ -107,6 +112,7 @@ public class NativeMemoryEntryContextTests extends KNNTestCase {
         // Get the expected size of this function
         final long expectedSizeBytes = directory.fileLength(indexFileName);
         final long expectedSizeKb = expectedSizeBytes / 1024L;
+        final FloatVectorValues floatVectorValues = mock(FloatVectorValues.class);
 
         // Check that the indexEntryContext will return the same thing
         NativeMemoryEntryContext.IndexEntryContext indexEntryContext = new NativeMemoryEntryContext.IndexEntryContext(
@@ -114,7 +120,8 @@ public class NativeMemoryEntryContextTests extends KNNTestCase {
             TestUtils.createFakeNativeMamoryCacheKey(indexFileName),
             null,
             null,
-            "test"
+            "test",
+                floatVectorValues
         );
 
         assertEquals(expectedSizeKb, indexEntryContext.calculateSizeInKB().longValue());
@@ -122,12 +129,14 @@ public class NativeMemoryEntryContextTests extends KNNTestCase {
 
     public void testIndexEntryContext_getOpenSearchIndexName() {
         String openSearchIndexName = "test-index";
+        final FloatVectorValues floatVectorValues = mock(FloatVectorValues.class);
         NativeMemoryEntryContext.IndexEntryContext indexEntryContext = new NativeMemoryEntryContext.IndexEntryContext(
             (Directory) null,
             TestUtils.createFakeNativeMamoryCacheKey("test"),
             null,
             null,
-            openSearchIndexName
+            openSearchIndexName,
+                floatVectorValues
         );
 
         assertEquals(openSearchIndexName, indexEntryContext.getOpenSearchIndexName());
@@ -135,12 +144,14 @@ public class NativeMemoryEntryContextTests extends KNNTestCase {
 
     public void testIndexEntryContext_getParameters() {
         Map<String, Object> parameters = ImmutableMap.of("test-1", 10);
+        final FloatVectorValues floatVectorValues = mock(FloatVectorValues.class);
         NativeMemoryEntryContext.IndexEntryContext indexEntryContext = new NativeMemoryEntryContext.IndexEntryContext(
             (Directory) null,
             TestUtils.createFakeNativeMamoryCacheKey("test"),
             null,
             parameters,
-            "test"
+            "test",
+                floatVectorValues
         );
 
         assertEquals(parameters, indexEntryContext.getParameters());
