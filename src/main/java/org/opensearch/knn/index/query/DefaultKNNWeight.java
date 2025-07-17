@@ -94,7 +94,7 @@ public class DefaultKNNWeight extends KNNWeight {
                     ),
                     knnQuery.getIndexName(),
                     modelId,
-                        reader.getVectorReader().getFloatVectorValues(knnQuery.getField())
+                        context.reader().getFloatVectorValues(knnQuery.getField())
                 ),
                 true
             );
