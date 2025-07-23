@@ -14,6 +14,7 @@ package org.opensearch.knn.index.memory;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.lucene.index.FloatVectorValues;
+import org.apache.lucene.index.KnnVectorValues;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.IndexInput;
@@ -106,7 +107,7 @@ public abstract class NativeMemoryEntryContext<T extends NativeMemoryAllocation>
         IndexInputWithBuffer indexInputWithBuffer;
 
         @Getter
-        FloatVectorValues floatVectorValues;
+        KnnVectorValues knnVectorValues;
 
         /**
          * Constructor
@@ -122,10 +123,10 @@ public abstract class NativeMemoryEntryContext<T extends NativeMemoryAllocation>
             String vectorIndexCacheKey,
             NativeMemoryLoadStrategy.IndexLoadStrategy indexLoadStrategy,
             Map<String, Object> parameters,
-            FloatVectorValues floatVectorValues,
+            KnnVectorValues knnVectorValues,
             String openSearchIndexName
         ) {
-            this(directory, vectorIndexCacheKey, indexLoadStrategy, parameters, openSearchIndexName, floatVectorValues, null);
+            this(directory, vectorIndexCacheKey, indexLoadStrategy, parameters, openSearchIndexName, knnVectorValues, null);
         }
 
         /**
@@ -144,7 +145,7 @@ public abstract class NativeMemoryEntryContext<T extends NativeMemoryAllocation>
             NativeMemoryLoadStrategy.IndexLoadStrategy indexLoadStrategy,
             Map<String, Object> parameters,
             String openSearchIndexName,
-            FloatVectorValues floatVectorValues,
+            KnnVectorValues knnVectorValues,
             String modelId
         ) {
             super(vectorIndexCacheKey);
@@ -153,7 +154,7 @@ public abstract class NativeMemoryEntryContext<T extends NativeMemoryAllocation>
             this.openSearchIndexName = openSearchIndexName;
             this.parameters = parameters;
             this.modelId = modelId;
-            this.floatVectorValues = floatVectorValues;
+            this.knnVectorValues = knnVectorValues;
         }
 
         @Override
