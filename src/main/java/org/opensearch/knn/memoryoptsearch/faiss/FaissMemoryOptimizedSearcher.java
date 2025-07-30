@@ -18,6 +18,7 @@ import org.apache.lucene.util.hnsw.HnswGraphSearcher;
 import org.apache.lucene.util.hnsw.OrdinalTranslatedKnnCollector;
 import org.apache.lucene.util.hnsw.RandomVectorScorer;
 import org.opensearch.knn.index.KNNVectorSimilarityFunction;
+import org.opensearch.knn.memoryoptsearch.FlatVectorsReaderWithFieldName;
 import org.opensearch.knn.memoryoptsearch.VectorSearcher;
 import org.opensearch.knn.memoryoptsearch.faiss.cagra.FaissCagraHNSW;
 
@@ -35,10 +36,10 @@ public class FaissMemoryOptimizedSearcher implements VectorSearcher {
     private final VectorSimilarityFunction vectorSimilarityFunction;
     private final long fileSize;
 
-    public FaissMemoryOptimizedSearcher(final IndexInput indexInput) throws IOException {
+    public FaissMemoryOptimizedSearcher(final IndexInput indexInput, final FlatVectorsReaderWithFieldName flatVectorsReaderWithFieldName) throws IOException {
         this.indexInput = indexInput;
         this.fileSize = indexInput.length();
-        this.faissIndex = FaissIndex.load(indexInput);
+        this.faissIndex = FaissIndex.load(indexInput, flatVectorsReaderWithFieldName);
         final KNNVectorSimilarityFunction knnVectorSimilarityFunction = faissIndex.getVectorSimilarityFunction();
         this.flatVectorsScorer = FlatVectorsScorerProvider.getFlatVectorsScorer(knnVectorSimilarityFunction);
         if (knnVectorSimilarityFunction != KNNVectorSimilarityFunction.HAMMING) {

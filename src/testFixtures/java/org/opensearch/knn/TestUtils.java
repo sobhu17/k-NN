@@ -9,9 +9,12 @@ import com.google.common.collect.ImmutableMap;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.lucene.document.*;
+import org.apache.lucene.index.*;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.IndexOutput;
+import org.apache.lucene.tests.index.RandomIndexWriter;
 import org.opensearch.common.xcontent.XContentHelper;
 import org.opensearch.core.common.bytes.BytesArray;
 import org.opensearch.core.xcontent.DeprecationHandler;
@@ -26,6 +29,7 @@ import org.opensearch.knn.index.store.IndexOutputWithBuffer;
 import org.opensearch.knn.jni.JNICommons;
 import org.opensearch.knn.jni.JNIService;
 import org.opensearch.knn.plugin.script.KNNScoringUtil;
+import org.apache.lucene.index.DirectoryReader;
 
 import java.util.Base64;
 import java.util.Collections;
@@ -469,5 +473,60 @@ public class TestUtils {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    public static FloatVectorValues createInMemoryFloatVectorValues(float[][] vectors, int dimension) {
+        return new FloatVectorValues() {
+            int current = -1;
+
+            @Override
+            public int size() { return vectors.length; }
+
+            @Override
+            public int dimension() { return dimension; }
+
+            @Override
+            public float[] vectorValue(int docId) {
+                return vectors[docId];
+            }
+
+            @Override
+            public FloatVectorValues copy() {
+                return this;
+            }
+
+            @Override
+            public DocIndexIterator iterator() {
+                return new DocIndexIterator() {
+                    int doc = -1;
+
+                    @Override
+                    public int index() {
+                        return doc;
+                    }
+
+                    @Override
+                    public int nextDoc() {
+                        return ++doc < vectors.length ? doc : NO_MORE_DOCS;
+                    }
+
+                    @Override
+                    public int advance(int target) throws IOException {
+                        doc = target;
+                        return doc < vectors.length ? doc : NO_MORE_DOCS;
+                    }
+
+                    @Override
+                    public long cost() {
+                        return vectors.length;
+                    }
+
+                    @Override
+                    public int docID() {
+                        return doc;
+                    }
+                };
+            }
+        };
     }
 }

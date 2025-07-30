@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
+import static org.mockito.Mockito.mock;
 import static org.opensearch.knn.memoryoptsearch.FaissHNSWTests.loadHnswBinary;
 
 public class FaissCagraHnswIndexTests extends KNNTestCase {
@@ -42,7 +43,8 @@ public class FaissCagraHnswIndexTests extends KNNTestCase {
     public void doTestKNNSearch(boolean isApproximateSearch) {
         doTestWithIndexInput(input -> {
             // Instantiate memory optimized searcher
-            final FaissMemoryOptimizedSearcher searcher = new FaissMemoryOptimizedSearcher(input);
+            final FlatVectorsReaderWithFieldName flatVectorsReaderWithFieldName = mock(FlatVectorsReaderWithFieldName.class);
+            final FaissMemoryOptimizedSearcher searcher = new FaissMemoryOptimizedSearcher(input, flatVectorsReaderWithFieldName);
 
             // Make collector
             final int k = isApproximateSearch ? EF_SEARCH : TOTAL_NUMBER_OF_VECTORS;
@@ -61,7 +63,7 @@ public class FaissCagraHnswIndexTests extends KNNTestCase {
 
             // Get answer
             input.seek(0);
-            final FaissIndex faissIndex = FaissIndex.load(input);
+            final FaissIndex faissIndex = FaissIndex.load(input, flatVectorsReaderWithFieldName);
             final Set<Integer> answerScoreDocs = calculateAnswer(query, faissIndex.getFloatValues(input), k);
 
             // Validate search result
@@ -88,8 +90,9 @@ public class FaissCagraHnswIndexTests extends KNNTestCase {
     }
 
     public void testLoadVectors() {
+        final FlatVectorsReaderWithFieldName flatVectorsReaderWithFieldName = mock(FlatVectorsReaderWithFieldName.class);
         doTestWithIndexInput(input -> {
-            final FaissIndex faissIndex = FaissIndex.load(input);
+            final FaissIndex faissIndex = FaissIndex.load(input, flatVectorsReaderWithFieldName);
             final FloatVectorValues values = faissIndex.getFloatValues(input);
 
             // Validate the first vector

@@ -9,9 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.apache.lucene.codecs.perfield.PerFieldKnnVectorsFormat;
 import org.apache.lucene.document.KnnFloatVectorField;
-import org.apache.lucene.index.DocValuesType;
-import org.apache.lucene.index.NoMergePolicy;
-import org.apache.lucene.index.VectorSimilarityFunction;
+import org.apache.lucene.index.*;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.join.BitSetProducer;
@@ -43,10 +41,7 @@ import org.opensearch.knn.index.query.KNNWeight;
 import org.apache.lucene.codecs.Codec;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FieldType;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.tests.index.RandomIndexWriter;
-import org.apache.lucene.index.SerialMergeScheduler;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.store.Directory;
 import org.opensearch.cluster.service.ClusterService;
@@ -284,15 +279,25 @@ public class KNNCodecTestCase extends KNNTestCase {
             // Add the documents to the index
             float[][] arrays = { { 1.0f, 3.0f, 4.0f }, { 2.0f, 5.0f, 8.0f }, { 3.0f, 6.0f, 9.0f }, { 4.0f, 7.0f, 10.0f } };
 
-            RandomIndexWriter writer = new RandomIndexWriter(random(), dir, iwc);
+//            RandomIndexWriter writer = new RandomIndexWriter(random(), dir, iwc);
             String fieldName = "test_vector";
-            for (float[] array : arrays) {
-                VectorField vectorField = new VectorField(fieldName, array, fieldType);
+//            for (float[] array : arrays) {
+//                VectorField vectorField = new VectorField(fieldName, array, fieldType);
+//                Document doc = new Document();
+//                doc.add(vectorField);
+//                writer.addDocument(doc);
+//            }
+
+            IndexWriterConfig config = new IndexWriterConfig();
+            config.setUseCompoundFile(false);
+
+            RandomIndexWriter writer = new RandomIndexWriter(random(), dir, config);
+            for (float[] vector : arrays) {
                 Document doc = new Document();
-                doc.add(vectorField);
+                doc.add(new KnnFloatVectorField(fieldName, vector, VectorSimilarityFunction.EUCLIDEAN));
                 writer.addDocument(doc);
             }
-
+            writer.commit();
             IndexReader reader = writer.getReader();
             writer.close();
 

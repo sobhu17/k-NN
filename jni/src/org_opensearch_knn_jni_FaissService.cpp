@@ -287,11 +287,11 @@ JNIEXPORT jlong JNICALL Java_org_opensearch_knn_jni_FaissService_loadBinaryIndex
         knn_jni::stream::NativeEngineIndexInputMediator mediator {&jniUtil, env, readStream};
 
         // Wrap the mediator with a glue code inheriting IOReader.
-        knn_jni::stream::FaissOpenSearchIOReader faissOpenSearchIOReader {&mediator};
+        knn_jni::stream::BinaryIndexIOReader binaryReader {&mediator};
 
         // Pass IOReader to Faiss for loading vector index.
         return knn_jni::faiss_wrapper::LoadBinaryIndexWithStream(
-            &faissOpenSearchIOReader);
+            &binaryReader);
     } catch (...) {
         jniUtil.CatchCppExceptionAndThrowJava(env);
     }
