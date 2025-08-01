@@ -5,6 +5,7 @@
 
 package org.opensearch.knn.memoryoptsearch;
 
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.lucene.codecs.hnsw.FlatVectorsReader;
@@ -21,12 +22,11 @@ import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.MMapDirectory;
 import org.apache.lucene.util.FixedBitSet;
 import org.opensearch.knn.KNNTestCase;
+import org.opensearch.knn.TestUtils;
 import org.opensearch.knn.common.KNNConstants;
 import org.opensearch.knn.generate.IndexingType;
 import org.opensearch.knn.generate.SearchTestHelper;
-import org.opensearch.knn.index.KNNVectorSimilarityFunction;
-import org.opensearch.knn.index.SpaceType;
-import org.opensearch.knn.index.VectorDataType;
+import org.opensearch.knn.index.*;
 import org.opensearch.knn.index.codec.KNN990Codec.NativeEngines990KnnVectorsReader;
 import org.opensearch.knn.index.codec.KNNCodecTestUtil;
 import org.opensearch.knn.index.codec.nativeindex.MemoryOptimizedSearchIndexingSupport;
@@ -59,6 +59,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.mockito.Mockito.mock;
@@ -272,11 +273,15 @@ public class FaissMemoryOptimizedSearcherTests extends KNNTestCase {
         // Build FAISS index
         final BuildInfo buildInfo = buildFaissIndex(testingSpec, TOTAL_NUM_DOCS_IN_SEGMENT, indexingType, spaceType);
 
+
+        final KnnVectorValues knnVectorValues = TestUtils.createInMemoryFloatVectorValuesForList(buildInfo.vectors.floatVectors, buildInfo.documentIds.size());
+
         // Load FAISS index via JNI
         long indexPointer = -1;
         try (final Directory directory = newFSDirectory(buildInfo.tempDirPath)) {
             try (final IndexInput input = directory.openInput(buildInfo.faissIndexFile, IOContext.READONCE)) {
                 final IndexInputWithBuffer indexInputWithBuffer = new IndexInputWithBuffer(input);
+                indexInputWithBuffer.setKnnVectorValues(knnVectorValues);
                 indexPointer = JNIService.loadIndex(indexInputWithBuffer, buildInfo.parameters, KNNEngine.FAISS);
             }
         }
@@ -415,10 +420,28 @@ public class FaissMemoryOptimizedSearcherTests extends KNNTestCase {
         // Make SegmentReadState and do search
         try (final Directory directory = new MMapDirectory(buildInfo.tempDirPath)) {
             final SegmentReadState readState = new SegmentReadState(directory, segmentInfo, fieldInfos, IOContext.DEFAULT);
+
+            final FlatVectorsReader flatVectorsReader = mock(FlatVectorsReader.class);
+
+            if (vectorDataType == VectorDataType.FLOAT) {
+                FloatVectorValues floatVectorValues = TestUtils.createInMemoryFloatVectorValuesForList(
+                        buildInfo.vectors.floatVectors,
+                        buildInfo.documentIds.size()
+                );
+                when(flatVectorsReader.getFloatVectorValues(TARGET_FIELD)).thenReturn(floatVectorValues);
+            } else if (vectorDataType == VectorDataType.BYTE || vectorDataType == VectorDataType.BINARY) {
+                ByteVectorValues byteVectorValues = TestUtils.createInMemoryByteVectorValuesForList(
+                        buildInfo.vectors.byteVectors,
+                        buildInfo.documentIds.size()
+                );
+                when(flatVectorsReader.getByteVectorValues(TARGET_FIELD)).thenReturn(byteVectorValues);
+            }
+
+
             try (
                 NativeEngines990KnnVectorsReader vectorsReader = new NativeEngines990KnnVectorsReader(
                     readState,
-                    mock(FlatVectorsReader.class)
+                    flatVectorsReader
                 )
             ) {
                 if (vectorDataType == VectorDataType.FLOAT) {
@@ -704,6 +727,7 @@ public class FaissMemoryOptimizedSearcherTests extends KNNTestCase {
         constructor.setAccessible(true);
         return constructor.newInstance(iterator);
     }
+
 
     @RequiredArgsConstructor
     static class BuildInfo {

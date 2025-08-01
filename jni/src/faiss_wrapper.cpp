@@ -265,7 +265,7 @@ void knn_jni::faiss_wrapper::CreateIndexFromTemplate(knn_jni::JNIUtilInterface *
     // Write the index to disk
     knn_jni::stream::NativeEngineIndexOutputMediator mediator {jniUtil, env, output};
     knn_jni::stream::FaissOpenSearchIOWriter writer {&mediator};
-    faiss::write_index(&idMap, &writer);
+    faiss::write_index(&idMap, &writer, 1ull << 63);
     mediator.flush();
 }
 
@@ -956,7 +956,7 @@ jbyteArray knn_jni::faiss_wrapper::TrainIndex(knn_jni::JNIUtilInterface * jniUti
 
     // Now that indexWriter is trained, we just load the bytes into an array and return
     faiss::VectorIOWriter vectorIoWriter;
-    faiss::write_index(indexWriter.get(), &vectorIoWriter);
+    faiss::write_index(indexWriter.get(), &vectorIoWriter, 1ull << 63);
 
     // Wrap in smart pointer
     std::unique_ptr<jbyte[]> jbytesBuffer;

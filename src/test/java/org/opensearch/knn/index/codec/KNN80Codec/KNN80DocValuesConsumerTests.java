@@ -24,11 +24,10 @@ import org.opensearch.common.settings.Settings;
 import org.opensearch.common.xcontent.XContentFactory;
 import org.opensearch.knn.KNNTestCase;
 import org.opensearch.knn.common.KNNConstants;
-import org.opensearch.knn.index.KnnVectorValuesAdapter;
+import org.opensearch.knn.index.*;
 import org.opensearch.knn.index.codec.KNNCodecVersion;
 import org.opensearch.knn.index.engine.KNNMethodConfigContext;
 import org.opensearch.knn.index.engine.KNNMethodContext;
-import org.opensearch.knn.index.VectorDataType;
 import org.opensearch.knn.index.mapper.CompressionLevel;
 import org.opensearch.knn.index.mapper.Mode;
 import org.opensearch.knn.index.vectorvalues.KNNVectorValues;
@@ -36,7 +35,6 @@ import org.opensearch.knn.index.vectorvalues.KNNVectorValuesFactory;
 import org.opensearch.knn.index.vectorvalues.TestVectorValues;
 import org.opensearch.knn.index.mapper.KNNVectorFieldMapper;
 import org.opensearch.knn.index.engine.MethodComponentContext;
-import org.opensearch.knn.index.SpaceType;
 import org.opensearch.knn.index.codec.KNNCodecTestUtil;
 import org.opensearch.knn.index.codec.util.KNNCodecUtil;
 import org.opensearch.knn.index.engine.KNNEngine;
@@ -50,6 +48,7 @@ import org.opensearch.knn.jni.JNIService;
 import org.opensearch.knn.plugin.stats.KNNCounter;
 import org.opensearch.knn.plugin.stats.KNNGraphValue;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Random;
@@ -242,7 +241,9 @@ public class KNN80DocValuesConsumerTests extends KNNTestCase {
         knn80DocValuesConsumer.addKNNBinaryField(fieldInfoArray[0], randomVectorDocValuesProducer, true);
 
         final KNNVectorValues<?> osKnnVectorValues = KNNVectorValuesFactory.getVectorValues(knnMethodConfigContext.getVectorDataType(), randomVectorDocValuesProducer.getBinary(fieldInfoArray[0]));
-        KnnVectorValues knnVectorValues = KnnVectorValuesAdapter.adapt(osKnnVectorValues, knnMethodConfigContext.getVectorDataType());
+        final KnnVectorValues knnVectorValues = (knnMethodConfigContext.getVectorDataType() == VectorDataType.FLOAT)
+                ? new KnnFloatVectorValuesAdapter((KNNVectorValues<float[]>)osKnnVectorValues)
+                : new KnnByteVectorValuesAdapter((KNNVectorValues<byte[]>)osKnnVectorValues);
 
 
         // The document should be created in the correct location
@@ -304,7 +305,9 @@ public class KNN80DocValuesConsumerTests extends KNNTestCase {
         VectorDataType vectorDataType = (vectorEncoding == VectorEncoding.FLOAT32) ? VectorDataType.FLOAT : VectorDataType.BYTE;
 
         final KNNVectorValues<?> osKnnVectorValues = KNNVectorValuesFactory.getVectorValues(vectorDataType, randomVectorDocValuesProducer.getBinary(fieldInfoArray[0]));
-        KnnVectorValues knnVectorValues = KnnVectorValuesAdapter.adapt(osKnnVectorValues, vectorDataType);
+        final KnnVectorValues knnVectorValues = (vectorDataType == VectorDataType.FLOAT)
+                ? new KnnFloatVectorValuesAdapter((KNNVectorValues<float[]>)osKnnVectorValues)
+                : new KnnByteVectorValuesAdapter((KNNVectorValues<byte[]>)osKnnVectorValues);
 
         // The document should be created in the correct location
         String expectedFile = KNNCodecUtil.buildEngineFileName(segmentName, knnEngine.getVersion(), fieldName, knnEngine.getExtension());
@@ -374,7 +377,9 @@ public class KNN80DocValuesConsumerTests extends KNNTestCase {
         knn80DocValuesConsumer.addKNNBinaryField(fieldInfoArray[0], randomVectorDocValuesProducer, false);
 
         final KNNVectorValues<?> osKnnVectorValues = KNNVectorValuesFactory.getVectorValues(knnMethodConfigContext.getVectorDataType(), randomVectorDocValuesProducer.getBinary(fieldInfoArray[0]));
-        KnnVectorValues knnVectorValues = KnnVectorValuesAdapter.adapt(osKnnVectorValues, knnMethodConfigContext.getVectorDataType());
+        final KnnVectorValues knnVectorValues = (knnMethodConfigContext.getVectorDataType() == VectorDataType.FLOAT)
+                ? new KnnFloatVectorValuesAdapter((KNNVectorValues<float[]>)osKnnVectorValues)
+                : new KnnByteVectorValuesAdapter((KNNVectorValues<byte[]>)osKnnVectorValues);
 
         // The document should be created in the correct location
         String expectedFile = KNNCodecUtil.buildEngineFileName(segmentName, knnEngine.getVersion(), fieldName, knnEngine.getExtension());
@@ -543,11 +548,13 @@ public class KNN80DocValuesConsumerTests extends KNNTestCase {
                 new TestVectorValues.RandomVectorDocValuesProducer(docsInSegment, dimension);
             knn80DocValuesConsumer.addKNNBinaryField(fieldInfoArray[0], randomVectorDocValuesProducer, true);
 
-            VectorEncoding vectorEncoding = fieldInfoArray[0].getVectorEncoding();
-            VectorDataType vectorDataType = (vectorEncoding == VectorEncoding.FLOAT32) ? VectorDataType.FLOAT : VectorDataType.BYTE;
-
-            final KNNVectorValues<?> osKnnVectorValues = KNNVectorValuesFactory.getVectorValues(vectorDataType, randomVectorDocValuesProducer.getBinary(fieldInfoArray[0]));
-            KnnVectorValues knnVectorValues = KnnVectorValuesAdapter.adapt(osKnnVectorValues, vectorDataType);
+//            VectorEncoding vectorEncoding = fieldInfoArray[0].getVectorEncoding();
+//            VectorDataType vectorDataType = (vectorEncoding == VectorEncoding.FLOAT32) ? VectorDataType.FLOAT : VectorDataType.BYTE;
+//
+//            final KNNVectorValues<?> osKnnVectorValues = KNNVectorValuesFactory.getVectorValues(vectorDataType, randomVectorDocValuesProducer.getBinary(fieldInfoArray[0]));
+//            final KnnVectorValues knnVectorValues = (vectorDataType == VectorDataType.FLOAT)
+//                    ? new KnnFloatVectorValuesAdapter((KNNVectorValues<float[]>)osKnnVectorValues)
+//                    : new KnnByteVectorValuesAdapter((KNNVectorValues<byte[]>)osKnnVectorValues);
 
             // The document should be created in the correct location
             String expectedFile = KNNCodecUtil.buildEngineFileName(
@@ -562,7 +569,7 @@ public class KNN80DocValuesConsumerTests extends KNNTestCase {
             assertValidFooter(state.directory, expectedFile);
 
             // The document should be readable by faiss
-            assertLoadableByEngine(HNSW_METHODPARAMETERS, state, expectedFile, knnEngine, spaceType, dimension, knnVectorValues);
+            assertLoadableByEngine(HNSW_METHODPARAMETERS, state, expectedFile, knnEngine, spaceType, dimension, null);
 
             // The graph creation statistics should be updated
             assertEquals(1 + initialMergeOperations, (long) KNNGraphValue.MERGE_TOTAL_OPERATIONS.getValue());

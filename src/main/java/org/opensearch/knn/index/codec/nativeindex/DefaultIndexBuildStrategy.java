@@ -7,9 +7,15 @@ package org.opensearch.knn.index.codec.nativeindex;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.apache.lucene.index.KnnVectorValues;
+import org.apache.lucene.store.IndexInput;
 import org.opensearch.knn.common.KNNConstants;
+import org.opensearch.knn.index.KnnByteVectorValuesAdapter;
+import org.opensearch.knn.index.KnnFloatVectorValuesAdapter;
+import org.opensearch.knn.index.VectorDataType;
 import org.opensearch.knn.index.codec.nativeindex.model.BuildIndexParams;
 import org.opensearch.knn.index.codec.transfer.OffHeapVectorTransfer;
+import org.opensearch.knn.index.store.IndexInputWithBuffer;
 import org.opensearch.knn.index.vectorvalues.KNNVectorValues;
 import org.opensearch.knn.jni.JNIService;
 

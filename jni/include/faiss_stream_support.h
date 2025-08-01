@@ -39,30 +39,31 @@ public:
           cachedEnv(_mediator->getEnv()) {
 
         name = "FaissOpenSearchIOReader";
-
-        // Step 1: Get VectorReader from readStream.getFullPrecisionVectors()
-        jobject readStream = mediator->getJavaObject();
-
-        jclass streamClass = cachedEnv->GetObjectClass(readStream);
-        jmethodID getVectorsMid = cachedEnv->GetMethodID(
-            streamClass,
-            "getFullPrecisionVectors",
-            "()Lorg/opensearch/knn/index/store/VectorReader;"
-        );
-        if (!getVectorsMid) {
-            throw std::runtime_error("Failed to find method getFullPrecisionVectors()");
-        }
-
-        jobject vectorReader = cachedEnv->CallObjectMethod(readStream, getVectorsMid);
-        if (cachedEnv->ExceptionCheck() || vectorReader == nullptr) {
-            throw std::runtime_error("getFullPrecisionVectors() returned null");
-        }
-
-        vectorReaderGlobalRef = cachedEnv->NewGlobalRef(vectorReader);
-        if (vectorReaderGlobalRef == nullptr) {
-            throw std::runtime_error("Failed to create global reference for VectorReader");
-        }
     }
+
+//        // Step 1: Get VectorReader from readStream.getFullPrecisionVectors()
+//        jobject readStream = mediator->getJavaObject();
+//
+//        jclass streamClass = cachedEnv->GetObjectClass(readStream);
+//        jmethodID getVectorsMid = cachedEnv->GetMethodID(
+//            streamClass,
+//            "getFullPrecisionVectors",
+//            "()Lorg/opensearch/knn/index/store/VectorReader;"
+//        );
+//        if (!getVectorsMid) {
+//            throw std::runtime_error("Failed to find method getFullPrecisionVectors()");
+//        }
+//
+//        jobject vectorReader = cachedEnv->CallObjectMethod(readStream, getVectorsMid);
+//        if (cachedEnv->ExceptionCheck() || vectorReader == nullptr) {
+//            throw std::runtime_error("getFullPrecisionVectors() returned null");
+//        }
+//
+//        vectorReaderGlobalRef = cachedEnv->NewGlobalRef(vectorReader);
+//        if (vectorReaderGlobalRef == nullptr) {
+//            throw std::runtime_error("Failed to create global reference for VectorReader");
+//        }
+//    }
 
     ~FaissOpenSearchIOReader() override {
         if (vectorReaderGlobalRef && cachedEnv) {
@@ -78,6 +79,30 @@ public:
 
     bool copy(void* dest, int expectedByteSize, bool isFloat) override {
         JNIEnv* env = cachedEnv;
+
+        jobject readStream = mediator->getJavaObject();
+
+        if (!vectorReaderGlobalRef) {
+            jclass streamClass = env->GetObjectClass(readStream);
+            jmethodID getVectorsMid = env->GetMethodID(
+                streamClass,
+                "getFullPrecisionVectors",
+                "()Lorg/opensearch/knn/index/store/VectorReader;"
+            );
+            if (!getVectorsMid) {
+                return false;
+            }
+
+            jobject vectorReader = env->CallObjectMethod(readStream, getVectorsMid);
+            if (env->ExceptionCheck() || vectorReader == nullptr) {
+                return false;
+            }
+
+            vectorReaderGlobalRef = env->NewGlobalRef(vectorReader);
+            if (vectorReaderGlobalRef == nullptr) {
+                return false;
+            }
+        }
 
 
         if (isFloat) {
@@ -153,29 +178,6 @@ private:
     jobject vectorReaderGlobalRef = nullptr;
     JNIEnv* cachedEnv = nullptr;
 }; // class FaissOpenSearchIOReader
-
-
-// BinaryIndexIOReader.h (or inline for now)
-
-class BinaryIndexIOReader final : public faiss::IOReader {
-public:
-    explicit BinaryIndexIOReader(knn_jni::stream::NativeEngineIndexInputMediator* _mediator)
-        : mediator(_mediator) {
-        if (_mediator == nullptr) throw std::invalid_argument("Mediator cannot be null");
-        name = "BinaryIndexIOReader";
-    }
-
-    size_t operator()(void* ptr, size_t size, size_t nitems) override {
-        size_t bytes = size * nitems;
-        mediator->copyBytes(bytes, static_cast<uint8_t*>(ptr));
-        return nitems;
-    }
-
-    // Do NOT implement `copy()` – binary path should not use it.
-
-private:
-    knn_jni::stream::NativeEngineIndexInputMediator* mediator;
-};
 
 
 /**

@@ -5,6 +5,9 @@
 
 package org.opensearch.knn.index.store;
 
+import lombok.Getter;
+import lombok.Setter;
+import org.apache.lucene.index.KnnVectorValues;
 import org.apache.lucene.store.IndexOutput;
 import org.opensearch.knn.common.exception.TerminalIOException;
 
