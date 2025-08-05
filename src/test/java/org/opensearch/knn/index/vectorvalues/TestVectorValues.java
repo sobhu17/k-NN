@@ -22,25 +22,14 @@ public class TestVectorValues {
 
     public static class RandomVectorBinaryDocValues extends VectorDocValues {
 
-        private BytesRef binaryValue;
-
         public RandomVectorBinaryDocValues(int count, int dimension) {
             super(count, dimension);
-            binaryValue = new BytesRef(knnVectorSerializer.floatToByteArray(getRandomVector(dimension)));
         }
 
         @Override
         public BytesRef binaryValue() throws IOException {
-            return binaryValue;
+            return new BytesRef(knnVectorSerializer.floatToByteArray(getRandomVector(dimension)));
         }
-
-        public RandomVectorBinaryDocValues clone(){
-            RandomVectorBinaryDocValues values = new RandomVectorBinaryDocValues(count, dimension);
-            values.binaryValue = binaryValue;
-//            values.current = 0;
-            return values;
-        }
-
     }
 
     public static class ConstantVectorBinaryDocValues extends VectorDocValues {
@@ -103,7 +92,7 @@ public class TestVectorValues {
 
         @Override
         public BinaryDocValues getBinary(FieldInfo field) throws IOException {
-            return randomBinaryDocValues.clone();
+            return randomBinaryDocValues;
         }
 
         @Override

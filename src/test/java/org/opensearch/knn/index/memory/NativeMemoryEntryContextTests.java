@@ -53,7 +53,7 @@ public class NativeMemoryEntryContextTests extends KNNTestCase {
                 indexLoadStrategy,
                 null,
                 "test",
-                    knnVectorValues
+                knnVectorValues
             )
         );
 
@@ -82,7 +82,7 @@ public class NativeMemoryEntryContextTests extends KNNTestCase {
             indexLoadStrategy,
             null,
             "test",
-                knnVectorValues
+            knnVectorValues
         );
 
         NativeMemoryAllocation.IndexAllocation indexAllocation = new NativeMemoryAllocation.IndexAllocation(
@@ -121,7 +121,7 @@ public class NativeMemoryEntryContextTests extends KNNTestCase {
             null,
             null,
             "test",
-                knnVectorValues
+            knnVectorValues
         );
 
         assertEquals(expectedSizeKb, indexEntryContext.calculateSizeInKB().longValue());
@@ -136,7 +136,7 @@ public class NativeMemoryEntryContextTests extends KNNTestCase {
             null,
             null,
             openSearchIndexName,
-                knnVectorValues
+            knnVectorValues
         );
 
         assertEquals(openSearchIndexName, indexEntryContext.getOpenSearchIndexName());
@@ -151,7 +151,7 @@ public class NativeMemoryEntryContextTests extends KNNTestCase {
             null,
             parameters,
             "test",
-                knnVectorValues
+            knnVectorValues
         );
 
         assertEquals(parameters, indexEntryContext.getParameters());

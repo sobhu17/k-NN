@@ -5,7 +5,6 @@
 
 package org.opensearch.knn.memoryoptsearch;
 
-import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.lucene.codecs.hnsw.FlatVectorsReader;
@@ -26,7 +25,9 @@ import org.opensearch.knn.TestUtils;
 import org.opensearch.knn.common.KNNConstants;
 import org.opensearch.knn.generate.IndexingType;
 import org.opensearch.knn.generate.SearchTestHelper;
-import org.opensearch.knn.index.*;
+import org.opensearch.knn.index.KNNVectorSimilarityFunction;
+import org.opensearch.knn.index.SpaceType;
+import org.opensearch.knn.index.VectorDataType;
 import org.opensearch.knn.index.codec.KNN990Codec.NativeEngines990KnnVectorsReader;
 import org.opensearch.knn.index.codec.KNNCodecTestUtil;
 import org.opensearch.knn.index.codec.nativeindex.MemoryOptimizedSearchIndexingSupport;
@@ -59,7 +60,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.mockito.Mockito.mock;
@@ -273,8 +273,9 @@ public class FaissMemoryOptimizedSearcherTests extends KNNTestCase {
         // Build FAISS index
         final BuildInfo buildInfo = buildFaissIndex(testingSpec, TOTAL_NUM_DOCS_IN_SEGMENT, indexingType, spaceType);
 
-
-        final KnnVectorValues knnVectorValues = TestUtils.createInMemoryFloatVectorValuesForList(buildInfo.vectors.floatVectors, buildInfo.documentIds.size());
+        KnnVectorValues knnVectorValues = testingSpec.dataType == VectorDataType.FLOAT
+            ? TestUtils.createInMemoryFloatVectorValuesForList(buildInfo.vectors.floatVectors, DIMENSIONS, buildInfo.documentIds)
+            : TestUtils.createInMemoryByteVectorValuesForList(buildInfo.vectors.byteVectors, DIMENSIONS, buildInfo.documentIds);
 
         // Load FAISS index via JNI
         long indexPointer = -1;
@@ -421,29 +422,27 @@ public class FaissMemoryOptimizedSearcherTests extends KNNTestCase {
         try (final Directory directory = new MMapDirectory(buildInfo.tempDirPath)) {
             final SegmentReadState readState = new SegmentReadState(directory, segmentInfo, fieldInfos, IOContext.DEFAULT);
 
-            final FlatVectorsReader flatVectorsReader = mock(FlatVectorsReader.class);
-
+            FlatVectorsReader flatVectorsReader = mock(FlatVectorsReader.class);
             if (vectorDataType == VectorDataType.FLOAT) {
                 FloatVectorValues floatVectorValues = TestUtils.createInMemoryFloatVectorValuesForList(
-                        buildInfo.vectors.floatVectors,
-                        buildInfo.documentIds.size()
+                    buildInfo.vectors.floatVectors,
+                    DIMENSIONS,
+                    buildInfo.documentIds
                 );
                 when(flatVectorsReader.getFloatVectorValues(TARGET_FIELD)).thenReturn(floatVectorValues);
-            } else if (vectorDataType == VectorDataType.BYTE || vectorDataType == VectorDataType.BINARY) {
+            }
+            if (vectorDataType == VectorDataType.BYTE) {
                 ByteVectorValues byteVectorValues = TestUtils.createInMemoryByteVectorValuesForList(
-                        buildInfo.vectors.byteVectors,
-                        buildInfo.documentIds.size()
+                    buildInfo.vectors.byteVectors,
+                    DIMENSIONS,
+                    buildInfo.documentIds
                 );
                 when(flatVectorsReader.getByteVectorValues(TARGET_FIELD)).thenReturn(byteVectorValues);
             }
 
-
-            try (
-                NativeEngines990KnnVectorsReader vectorsReader = new NativeEngines990KnnVectorsReader(
-                    readState,
-                    flatVectorsReader
-                )
-            ) {
+            try (NativeEngines990KnnVectorsReader vectorsReader = new NativeEngines990KnnVectorsReader(readState, flatVectorsReader
+            // mock(FlatVectorsReader.class)
+            )) {
                 if (vectorDataType == VectorDataType.FLOAT) {
                     vectorsReader.search(TARGET_FIELD, (float[]) query, knnCollector, acceptDocs);
                 } else if (vectorDataType == VectorDataType.BYTE || vectorDataType == VectorDataType.BINARY) {
@@ -727,7 +726,6 @@ public class FaissMemoryOptimizedSearcherTests extends KNNTestCase {
         constructor.setAccessible(true);
         return constructor.newInstance(iterator);
     }
-
 
     @RequiredArgsConstructor
     static class BuildInfo {

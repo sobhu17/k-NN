@@ -194,8 +194,8 @@ public class DefaultKNNWeight extends KNNWeight {
         LeafReaderContext context
     ) throws ExecutionException, IOException {
         KnnVectorValues knnVectorValues = (vectorDataType == VectorDataType.BYTE)
-                ? context.reader().getByteVectorValues(knnQuery.getField())
-                : context.reader().getFloatVectorValues(knnQuery.getField());
+            ? context.reader().getByteVectorValues(knnQuery.getField())
+            : context.reader().getFloatVectorValues(knnQuery.getField());
         return nativeMemoryCacheManager.get(
             new NativeMemoryEntryContext.IndexEntryContext(
                 reader.directory(),
@@ -211,7 +211,7 @@ public class DefaultKNNWeight extends KNNWeight {
                 ),
                 knnQuery.getIndexName(),
                 modelId,
-                    knnVectorValues
+                knnVectorValues
             ),
             true
         );

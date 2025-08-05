@@ -279,7 +279,11 @@ public class FaissIdMapIndexTests extends KNNTestCase {
     @SneakyThrows
     private static FaissIdMapIndex triggerDoLoad(final IndexInput input, final String indexType) {
         final FaissIdMapIndex index = new FaissIdMapIndex(indexType);
-        final Method doLoadMethod = FaissIdMapIndex.class.getDeclaredMethod("doLoad", IndexInput.class, FlatVectorsReaderWithFieldName.class);
+        final Method doLoadMethod = FaissIdMapIndex.class.getDeclaredMethod(
+            "doLoad",
+            IndexInput.class,
+            FlatVectorsReaderWithFieldName.class
+        );
         doLoadMethod.setAccessible(true);
         doLoadMethod.invoke(index, input, new FlatVectorsReaderWithFieldName(mock(FlatVectorsReader.class), "test_field"));
         return index;

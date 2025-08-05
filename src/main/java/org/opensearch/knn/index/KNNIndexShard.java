@@ -155,7 +155,11 @@ public class KNNIndexShard {
         }
     }
 
-    private void warmUpOffHeapIndex(final List<EngineFileContext> engineFileContexts, final Directory directory, final LeafReaderContext leafReaderContext) throws IOException {
+    private void warmUpOffHeapIndex(
+        final List<EngineFileContext> engineFileContexts,
+        final Directory directory,
+        final LeafReaderContext leafReaderContext
+    ) throws IOException {
         for (final EngineFileContext engineFileContext : engineFileContexts) {
             try {
                 // Get cache key for an off-heap index
@@ -166,8 +170,8 @@ public class KNNIndexShard {
 
                 final VectorDataType vectorDataType = engineFileContext.getVectorDataType();
                 final KnnVectorValues knnVectorValues = (vectorDataType == VectorDataType.BYTE)
-                        ? leafReaderContext.reader().getByteVectorValues(engineFileContext.getFieldName())
-                        : leafReaderContext.reader().getFloatVectorValues(engineFileContext.getFieldName());
+                    ? leafReaderContext.reader().getByteVectorValues(engineFileContext.getFieldName())
+                    : leafReaderContext.reader().getFloatVectorValues(engineFileContext.getFieldName());
 
                 // Load an off-heap index
                 nativeMemoryCacheManager.get(
@@ -185,7 +189,7 @@ public class KNNIndexShard {
                         ),
                         getIndexName(),
                         engineFileContext.getModelId(),
-                            knnVectorValues
+                        knnVectorValues
                     ),
                     true
                 );

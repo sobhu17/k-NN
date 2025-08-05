@@ -41,29 +41,6 @@ public:
         name = "FaissOpenSearchIOReader";
     }
 
-//        // Step 1: Get VectorReader from readStream.getFullPrecisionVectors()
-//        jobject readStream = mediator->getJavaObject();
-//
-//        jclass streamClass = cachedEnv->GetObjectClass(readStream);
-//        jmethodID getVectorsMid = cachedEnv->GetMethodID(
-//            streamClass,
-//            "getFullPrecisionVectors",
-//            "()Lorg/opensearch/knn/index/store/VectorReader;"
-//        );
-//        if (!getVectorsMid) {
-//            throw std::runtime_error("Failed to find method getFullPrecisionVectors()");
-//        }
-//
-//        jobject vectorReader = cachedEnv->CallObjectMethod(readStream, getVectorsMid);
-//        if (cachedEnv->ExceptionCheck() || vectorReader == nullptr) {
-//            throw std::runtime_error("getFullPrecisionVectors() returned null");
-//        }
-//
-//        vectorReaderGlobalRef = cachedEnv->NewGlobalRef(vectorReader);
-//        if (vectorReaderGlobalRef == nullptr) {
-//            throw std::runtime_error("Failed to create global reference for VectorReader");
-//        }
-//    }
 
     ~FaissOpenSearchIOReader() override {
         if (vectorReaderGlobalRef && cachedEnv) {
@@ -127,7 +104,8 @@ public:
             std::memcpy(dest, elems, vectorByteSize);
             return true;
 
-        } else {
+        }
+        else {
             jmethodID nextByteMid = getNextByteVectorMethod(mediator, env);
             jbyteArray vector = (jbyteArray) env->CallObjectMethod(vectorReaderGlobalRef, nextByteMid);
             if (env->ExceptionCheck() || vector == nullptr) {

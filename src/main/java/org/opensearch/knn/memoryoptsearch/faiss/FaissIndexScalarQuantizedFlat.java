@@ -84,10 +84,9 @@ public class FaissIndexScalarQuantizedFlat extends FaissIndex {
         trainedValues = new FaissSection(input, Float.BYTES);
         setDerivedSizes();
 
-        if(dedupApplied){
+        if (dedupApplied) {
             flatVectors = null;
-        }
-        else {
+        } else {
             flatVectors = new FaissSection(input, Byte.BYTES);
         }
 
@@ -102,7 +101,7 @@ public class FaissIndexScalarQuantizedFlat extends FaissIndex {
 
     @Override
     public FloatVectorValues getFloatValues(IndexInput indexInput) throws IOException {
-        if(flatVectors == null){
+        if (flatVectors == null) {
             return flatVectorsReaderWithFieldName.getFlatVectorsReader().getFloatVectorValues(flatVectorsReaderWithFieldName.getField());
         }
         @RequiredArgsConstructor
@@ -140,7 +139,7 @@ public class FaissIndexScalarQuantizedFlat extends FaissIndex {
 
     @Override
     public ByteVectorValues getByteValues(IndexInput indexInput) throws IOException {
-        if(flatVectors == null){
+        if (flatVectors == null) {
             return flatVectorsReaderWithFieldName.getFlatVectorsReader().getByteVectorValues(flatVectorsReaderWithFieldName.getField());
         }
         @RequiredArgsConstructor

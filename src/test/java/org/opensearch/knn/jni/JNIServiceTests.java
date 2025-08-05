@@ -14,7 +14,6 @@ package org.opensearch.knn.jni;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import lombok.SneakyThrows;
-import org.apache.lucene.index.FloatVectorValues;
 import org.apache.lucene.index.KnnVectorValues;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IOContext;
@@ -96,7 +95,10 @@ public class JNIServiceTests extends KNNTestCase {
         testData = new TestUtils.TestData(testIndexVectors.getPath(), testQueries.getPath());
         testDataNested = new TestUtils.TestData(testIndexVectorsNested.getPath(), testQueries.getPath());
         knnVectorValues = TestUtils.createInMemoryFloatVectorValues(testData.indexData.vectors, testData.indexData.getDimension());
-        nestedKnnVectorValue = TestUtils.createInMemoryFloatVectorValues(testDataNested.indexData.vectors, testDataNested.indexData.getDimension());
+        nestedKnnVectorValue = TestUtils.createInMemoryFloatVectorValues(
+            testDataNested.indexData.vectors,
+            testDataNested.indexData.getDimension()
+        );
     }
 
     @SneakyThrows
@@ -638,7 +640,7 @@ public class JNIServiceTests extends KNNTestCase {
             );
             assertTrue(directory.fileLength(indexFileName1) > 0);
 
-            KnnVectorValues ioexceptionKnnVectorValues = TestUtils.createInMemoryFloatVectorValues(vectors , vectors[0].length);
+            KnnVectorValues ioexceptionKnnVectorValues = TestUtils.createInMemoryFloatVectorValues(vectors, vectors[0].length);
 
             final IndexInput raiseIOExceptionIndexInput = new RaisingIOExceptionIndexInput();
             final IndexInputWithBuffer indexInputWithBuffer = new IndexInputWithBuffer(raiseIOExceptionIndexInput);
@@ -2036,6 +2038,7 @@ public class JNIServiceTests extends KNNTestCase {
             String faissHNSWIndex = createFaissHNSWIndex(directory, SpaceType.L2);
             try (IndexInput indexInput = directory.openInput(faissHNSWIndex, IOContext.DEFAULT)) {
                 final IndexInputWithBuffer indexInputWithBuffer = new IndexInputWithBuffer(indexInput);
+                indexInputWithBuffer.setKnnVectorValues(knnVectorValues);
                 long faissHNSWAddress = JNIService.loadIndex(indexInputWithBuffer, Collections.emptyMap(), KNNEngine.FAISS);
                 assertFalse(JNIService.isSharedIndexStateRequired(faissHNSWAddress, KNNEngine.FAISS));
                 JNIService.free(faissHNSWAddress, KNNEngine.FAISS);

@@ -24,7 +24,11 @@ import java.io.IOException;
  */
 public class FaissMemoryOptimizedSearcherFactory implements VectorSearcherFactory {
     @Override
-    public VectorSearcher createVectorSearcher(final Directory directory, final String fileName, final FlatVectorsReaderWithFieldName flatVectorsReaderWithFieldName) throws IOException {
+    public VectorSearcher createVectorSearcher(
+        final Directory directory,
+        final String fileName,
+        final FlatVectorsReaderWithFieldName flatVectorsReaderWithFieldName
+    ) throws IOException {
         final IndexInput indexInput = directory.openInput(
             fileName,
             new IOContext(IOContext.Context.DEFAULT, null, null, ReadAdvice.RANDOM)

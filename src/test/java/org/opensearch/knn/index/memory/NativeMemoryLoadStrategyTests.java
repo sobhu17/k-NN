@@ -68,7 +68,7 @@ public class NativeMemoryLoadStrategyTests extends KNNTestCase {
                 NativeMemoryLoadStrategy.IndexLoadStrategy.getInstance(),
                 parameters,
                 "test",
-                    knnVectorValues
+                knnVectorValues
             );
 
             // open graph file before load
@@ -117,7 +117,7 @@ public class NativeMemoryLoadStrategyTests extends KNNTestCase {
                 NativeMemoryLoadStrategy.IndexLoadStrategy.getInstance(),
                 parameters,
                 "test",
-                    knnVectorValues
+                knnVectorValues
             );
 
             // open graph file before load

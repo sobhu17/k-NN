@@ -6,7 +6,6 @@
 package org.opensearch.knn.memoryoptsearch.faiss;
 
 import org.apache.lucene.codecs.hnsw.FlatVectorsScorer;
-import org.apache.lucene.index.FloatVectorValues;
 import org.apache.lucene.index.VectorEncoding;
 import org.apache.lucene.index.VectorSimilarityFunction;
 import org.apache.lucene.search.DocIdSetIterator;
@@ -37,7 +36,8 @@ public class FaissMemoryOptimizedSearcher implements VectorSearcher {
     private final VectorSimilarityFunction vectorSimilarityFunction;
     private final long fileSize;
 
-    public FaissMemoryOptimizedSearcher(final IndexInput indexInput, final FlatVectorsReaderWithFieldName flatVectorsReaderWithFieldName) throws IOException {
+    public FaissMemoryOptimizedSearcher(final IndexInput indexInput, final FlatVectorsReaderWithFieldName flatVectorsReaderWithFieldName)
+        throws IOException {
         this.indexInput = indexInput;
         this.fileSize = indexInput.length();
         this.faissIndex = FaissIndex.load(indexInput, flatVectorsReaderWithFieldName);

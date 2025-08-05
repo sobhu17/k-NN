@@ -364,7 +364,10 @@ public class NativeEngines990KnnVectorsReader extends KnnVectorsReader {
 
         // Start creating searcher
         final String fileName = KNNCodecUtil.getNativeEngineFileFromFieldInfo(fieldInfo, segmentReadState.segmentInfo);
-        FlatVectorsReaderWithFieldName flatVectorsReaderWithFieldName = new FlatVectorsReaderWithFieldName(flatVectorsReader, fieldInfo.name);
+        FlatVectorsReaderWithFieldName flatVectorsReaderWithFieldName = new FlatVectorsReaderWithFieldName(
+            flatVectorsReader,
+            fieldInfo.name
+        );
         if (fileName != null) {
             return () -> searcherFactory.createVectorSearcher(segmentReadState.directory, fileName, flatVectorsReaderWithFieldName);
         }

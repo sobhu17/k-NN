@@ -63,21 +63,20 @@ public class FaissIndexFloatFlat extends FaissIndex {
         this.flatVectorsReaderWithFieldName = flatVectorsReaderWithFieldName;
         boolean dedupApplied = readCommonHeader(input);
 
-        if(dedupApplied){
+        if (dedupApplied) {
             floatVectors = null;
-        }
-        else{
+        } else {
             oneVectorByteSize = (long) Float.BYTES * getDimension();
             floatVectors = new FaissSection(input, Float.BYTES);
             if (floatVectors.getSectionSize() != (getTotalNumberOfVectors() * oneVectorByteSize)) {
                 throw new IllegalStateException(
-                        "Got an inconsistent bytes size of vector ["
-                                + floatVectors.getSectionSize()
-                                + "] "
-                                + "when faissIndexFloatFlat.totalNumberOfVectors="
-                                + getTotalNumberOfVectors()
-                                + ", faissIndexFloatFlat.oneVectorByteSize="
-                                + oneVectorByteSize
+                    "Got an inconsistent bytes size of vector ["
+                        + floatVectors.getSectionSize()
+                        + "] "
+                        + "when faissIndexFloatFlat.totalNumberOfVectors="
+                        + getTotalNumberOfVectors()
+                        + ", faissIndexFloatFlat.oneVectorByteSize="
+                        + oneVectorByteSize
                 );
             }
         }

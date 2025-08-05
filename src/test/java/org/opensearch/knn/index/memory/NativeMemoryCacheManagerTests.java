@@ -585,7 +585,7 @@ public class NativeMemoryCacheManagerTests extends OpenSearchSingleNodeTestCase 
                 indexLoadStrategy,
                 null,
                 "test",
-                    knnVectorValues
+                knnVectorValues
             )
         );
 
@@ -618,7 +618,14 @@ public class NativeMemoryCacheManagerTests extends OpenSearchSingleNodeTestCase 
         NativeMemoryLoadStrategy.IndexLoadStrategy indexLoadStrategy = mock(NativeMemoryLoadStrategy.IndexLoadStrategy.class);
         final KnnVectorValues knnVectorValues = mock(KnnVectorValues.class);
         NativeMemoryEntryContext.IndexEntryContext indexEntryContext = spy(
-            new NativeMemoryEntryContext.IndexEntryContext((Directory) null, "invalid-cache-key", indexLoadStrategy, null, "test", knnVectorValues)
+            new NativeMemoryEntryContext.IndexEntryContext(
+                (Directory) null,
+                "invalid-cache-key",
+                indexLoadStrategy,
+                null,
+                "test",
+                knnVectorValues
+            )
         );
 
         Directory mockDirectory = mock(Directory.class);
@@ -633,7 +640,14 @@ public class NativeMemoryCacheManagerTests extends OpenSearchSingleNodeTestCase 
         NativeMemoryLoadStrategy.IndexLoadStrategy indexLoadStrategy = mock(NativeMemoryLoadStrategy.IndexLoadStrategy.class);
         final KnnVectorValues knnVectorValues = mock(KnnVectorValues.class);
         NativeMemoryEntryContext.IndexEntryContext indexEntryContext = spy(
-            new NativeMemoryEntryContext.IndexEntryContext((Directory) null, "invalid-cache-key", indexLoadStrategy, null, "test", knnVectorValues)
+            new NativeMemoryEntryContext.IndexEntryContext(
+                (Directory) null,
+                "invalid-cache-key",
+                indexLoadStrategy,
+                null,
+                "test",
+                knnVectorValues
+            )
         );
 
         doReturn(0).when(indexEntryContext).calculateSizeInKB();
@@ -678,7 +692,7 @@ public class NativeMemoryCacheManagerTests extends OpenSearchSingleNodeTestCase 
                 indexLoadStrategy,
                 null,
                 "test",
-                    knnVectorValues
+                knnVectorValues
             )
         );
 
@@ -740,7 +754,7 @@ public class NativeMemoryCacheManagerTests extends OpenSearchSingleNodeTestCase 
                 indexLoadStrategy,
                 null,
                 "test",
-                    knnVectorValues
+                knnVectorValues
             )
         );
 

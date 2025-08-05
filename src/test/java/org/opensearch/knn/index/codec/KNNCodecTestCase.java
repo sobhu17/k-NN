@@ -279,14 +279,14 @@ public class KNNCodecTestCase extends KNNTestCase {
             // Add the documents to the index
             float[][] arrays = { { 1.0f, 3.0f, 4.0f }, { 2.0f, 5.0f, 8.0f }, { 3.0f, 6.0f, 9.0f }, { 4.0f, 7.0f, 10.0f } };
 
-//            RandomIndexWriter writer = new RandomIndexWriter(random(), dir, iwc);
+            // RandomIndexWriter writer = new RandomIndexWriter(random(), dir, iwc);
             String fieldName = "test_vector";
-//            for (float[] array : arrays) {
-//                VectorField vectorField = new VectorField(fieldName, array, fieldType);
-//                Document doc = new Document();
-//                doc.add(vectorField);
-//                writer.addDocument(doc);
-//            }
+            // for (float[] array : arrays) {
+            // VectorField vectorField = new VectorField(fieldName, array, fieldType);
+            // Document doc = new Document();
+            // doc.add(vectorField);
+            // writer.addDocument(doc);
+            // }
 
             IndexWriterConfig config = new IndexWriterConfig();
             config.setUseCompoundFile(false);

@@ -14,7 +14,6 @@ import org.apache.lucene.index.*;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.IndexOutput;
-import org.apache.lucene.tests.index.RandomIndexWriter;
 import org.opensearch.common.xcontent.XContentHelper;
 import org.opensearch.core.common.bytes.BytesArray;
 import org.opensearch.core.xcontent.DeprecationHandler;
@@ -29,7 +28,6 @@ import org.opensearch.knn.index.store.IndexOutputWithBuffer;
 import org.opensearch.knn.jni.JNICommons;
 import org.opensearch.knn.jni.JNIService;
 import org.opensearch.knn.plugin.script.KNNScoringUtil;
-import org.apache.lucene.index.DirectoryReader;
 
 import java.util.Base64;
 import java.util.Collections;
@@ -477,13 +475,16 @@ public class TestUtils {
 
     public static FloatVectorValues createInMemoryFloatVectorValues(float[][] vectors, int dimension) {
         return new FloatVectorValues() {
-            int current = -1;
 
             @Override
-            public int size() { return vectors.length; }
+            public int size() {
+                return vectors.length;
+            }
 
             @Override
-            public int dimension() { return dimension; }
+            public int dimension() {
+                return dimension;
+            }
 
             @Override
             public float[] vectorValue(int docId) {
@@ -530,18 +531,26 @@ public class TestUtils {
         };
     }
 
-    public static FloatVectorValues createInMemoryFloatVectorValuesForList(List<float[]> vectors, int dimension) {
+    public static FloatVectorValues createInMemoryFloatVectorValuesForList(
+        List<float[]> vectors,
+        int dimension,
+        final List<Integer> docids
+    ) {
         return new FloatVectorValues() {
-            int current = -1;
 
             @Override
-            public int size() { return vectors.size(); }
+            public int size() {
+                return vectors.size();
+            }
 
             @Override
-            public int dimension() { return dimension; }
+            public int dimension() {
+                return dimension;
+            }
 
             @Override
-            public float[] vectorValue(int docId) {
+            public float[] vectorValue(int ord) {
+                int docId = docids.get(ord);
                 return vectors.get(docId);
             }
 
@@ -585,18 +594,22 @@ public class TestUtils {
         };
     }
 
-    public static ByteVectorValues createInMemoryByteVectorValuesForList(List<byte[]> vectors, int dimension) {
+    public static ByteVectorValues createInMemoryByteVectorValuesForList(List<byte[]> vectors, int dimension, final List<Integer> docids) {
         return new ByteVectorValues() {
-            int current = -1;
 
             @Override
-            public int size() { return vectors.size(); }
+            public int size() {
+                return vectors.size();
+            }
 
             @Override
-            public int dimension() { return dimension; }
+            public int dimension() {
+                return dimension;
+            }
 
             @Override
-            public byte[] vectorValue(int docId) {
+            public byte[] vectorValue(int ord) {
+                int docId = docids.get(ord);
                 return vectors.get(docId);
             }
 
@@ -639,6 +652,5 @@ public class TestUtils {
             }
         };
     }
-
 
 }

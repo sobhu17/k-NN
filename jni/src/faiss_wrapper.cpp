@@ -252,7 +252,7 @@ void knn_jni::faiss_wrapper::CreateIndexFromTemplate(knn_jni::JNIUtilInterface *
 
     // Create faiss index
     std::unique_ptr<faiss::Index> indexWriter;
-    indexWriter.reset(faiss::read_index(&vectorIoReader, 0));
+    indexWriter.reset(faiss::read_index(&vectorIoReader, (1ull<<63)));
 
     auto idVector = jniUtil->ConvertJavaIntArrayToCppIntVector(env, idsJ);
     faiss::IndexIDMap idMap =  faiss::IndexIDMap(indexWriter.get());
@@ -458,7 +458,8 @@ jlong knn_jni::faiss_wrapper::LoadIndexWithStream(faiss::IOReader* ioReader) {
       faiss::read_index(ioReader,
                         faiss::IO_FLAG_READ_ONLY
                         | faiss::IO_FLAG_PQ_SKIP_SDC_TABLE
-                        | faiss::IO_FLAG_SKIP_PRECOMPUTE_TABLE);
+                        | faiss::IO_FLAG_SKIP_PRECOMPUTE_TABLE
+                        | (1ULL << 63));
 
     return (jlong) indexReader;
 }
